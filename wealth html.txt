@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>My Wealth</title>
+<style>
+body{
+    font-family: Arial, sans-serif;
+    margin:0;
+    background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+    color:white;
+}
+
+.container{
+    width:90%;
+    max-width:1000px;
+    margin:auto;
+    padding:20px;
+}
+
+h1{
+    text-align:center;
+    color:gold;
+}
+
+.card{
+    background:rgba(255,255,255,0.08);
+    padding:20px;
+    margin:15px 0;
+    border-radius:10px;
+}
+
+input,button{
+    padding:8px;
+    margin:5px;
+    border-radius:5px;
+    border:none;
+}
+
+button{
+    background:gold;
+    cursor:pointer;
+}
+
+.dashboard{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+    gap:10px;
+}
+
+.stat{
+    background:rgba(0,0,0,0.3);
+    padding:15px;
+    border-radius:8px;
+    text-align:center;
+}
+
+.success{
+    color:lightgreen;
+    font-weight:bold;
+}
+
+.warning{
+    color:orange;
+    font-weight:bold;
+}
+
+.danger{
+    color:red;
+    font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<h1>My Wealth</h1>
+
+<div class="card">
+<h3>Family Setup</h3>
+Members: <input type="number" id="members"><br>
+Total Capital: <input type="number" id="capital"><br>
+Bank Balance: <input type="number" id="bank"><br>
+Monthly Income: <input type="number" id="income"><br>
+<button onclick="updateDashboard()">Save Family Info</button>
+</div>
+
+<div class="card">
+<h3>Daily Entry</h3>
+Daily Income: <input type="number" id="dailyIncome"><br>
+Daily Expense: <input type="number" id="dailyExpense"><br>
+<button onclick="addDaily()">Add Today Entry</button>
+<p id="appreciation"></p>
+</div>
+
+<div class="card">
+<h3>Debt Management</h3>
+Debt Amount: <input type="number" id="debtAmount"><br>
+Due Date: <input type="date" id="dueDate"><br>
+<button onclick="calculateDebt()">Calculate Saving Plan</button>
+<p id="debtInfo"></p>
+</div>
+
+<div class="card dashboard">
+<div class="stat">
+<h4>Total Income</h4>
+<p id="totalIncome">0</p>
+</div>
+
+<div class="stat">
+<h4>Total Expense</h4>
+<p id="totalExpense">0</p>
+</div>
+
+<div class="stat">
+<h4>Total Savings</h4>
+<p id="totalSavings">0</p>
+</div>
+
+<div class="stat">
+<h4>Total Debt</h4>
+<p id="totalDebt">0</p>
+</div>
+</div>
+
+</div>
+
+<script>
+
+let totalIncome = 0;
+let totalExpense = 0;
+let debtAmount = 0;
+let dueDate = null;
+
+function updateDashboard(){
+    totalIncome = parseFloat(document.getElementById("income").value) || 0;
+    document.getElementById("totalIncome").innerText = totalIncome;
+}
+
+function addDaily(){
+    let dIncome = parseFloat(document.getElementById("dailyIncome").value) || 0;
+    let dExpense = parseFloat(document.getElementById("dailyExpense").value) || 0;
+
+    totalIncome += dIncome;
+    totalExpense += dExpense;
+
+    let savings = totalIncome - totalExpense;
+
+    document.getElementById("totalIncome").innerText = totalIncome;
+    document.getElementById("totalExpense").innerText = totalExpense;
+    document.getElementById("totalSavings").innerText = savings;
+
+    if(debtAmount > 0 && dueDate){
+        let today = new Date();
+        let timeDiff = new Date(dueDate) - today;
+        let daysLeft = Math.ceil(timeDiff / (1000*60*60*24));
+
+        if(daysLeft > 0){
+            let requiredPerDay = debtAmount / daysLeft;
+
+            if(dIncome - dExpense >= requiredPerDay){
+                document.getElementById("appreciation").innerHTML =
+                "<span class='success'>Great job! You saved enough today towards your debt.</span>";
+            }else{
+                document.getElementById("appreciation").innerHTML =
+                "<span class='warning'>You need to save more daily to clear debt on time.</span>";
+            }
+        }
+    }
+}
+
+function calculateDebt(){
+    debtAmount = parseFloat(document.getElementById("debtAmount").value) || 0;
+    dueDate = document.getElementById("dueDate").value;
+
+    document.getElementById("totalDebt").innerText = debtAmount;
+
+    let today = new Date();
+    let timeDiff = new Date(dueDate) - today;
+    let daysLeft = Math.ceil(timeDiff / (1000*60*60*24));
+
+    if(daysLeft <= 0){
+        document.getElementById("debtInfo").innerHTML =
+        "<span class='danger'>Due date has passed or is today.</span>";
+        return;
+    }
+
+    let requiredPerDay = (debtAmount / daysLeft).toFixed(2);
+
+    document.getElementById("debtInfo").innerHTML =
+    "You must save <b>₹" + requiredPerDay + "</b> per day to clear debt in " + daysLeft + " days.";
+
+    if(daysLeft == 1){
+        alert("Reminder: Your debt is due tomorrow. Please arrange payment.");
+    }
+}
+
+</script>
+
+</body>
+</html>
